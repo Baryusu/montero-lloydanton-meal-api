@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Student List</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        h1 {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        button {
+            margin-right: 10px;
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+        input[type="number"] {
+            padding: 5px;
+            width: 100px;
+        }
+        #mealId {
+            margin-right: 10px;
+            padding: 5px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>Campus Food Menu</h1>
+
+    <button onclick="loadMeals()">Load All Meals</button>
+    <br><br>
+    <input type="text" id="mealId" placeholder="Search Meal">
+    <button onclick="searchMeal()">Find Meal</button>
+
+    <p id="matchCount" aria-live="polite">Showing 0 meal(s)</p>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Meal</th>
+                <th>Category</th>
+                <th>Price</th>
+            </tr>
+        </thead>
+        <tbody id="mealList"></tbody>
+    </table>
+    <script>
+        function displayMeals(meals) {
+            const list = document.getElementById("mealList");
+            const matchCount = document.getElementById("matchCount");
+            list.innerHTML = "";
+            
+            matchCount.textContent = `Showing ${meals.length} meal(s)`;
+
+            meals.forEach(meal => {
+                const row = document.createElement("tr");
+                row.innerHTML = `
+                    <td>${meal.id}</td>
+                    <td>${meal.name}</td>
+                    <td>${meal.category}</td>
+                    <td>₱${(meal.price)}</td>
+                `;
+                list.appendChild(row);
+            });
+        }
+
+        async function loadMeals(){
+            const response = await fetch("/api/meals");
+            const meals = await response.json();
+            displayMeals(meals);
+        }
+
+        async function searchMeal(){
+            const mealId = document.getElementById("mealId").value.trim();
+            if (!mealId) {
+                alert("Please enter a meal ID.");
+                return;
+            }
+
+            const response = await fetch(`/api/meals/${mealId}`);
+
+            if(response.ok){
+                const meal = await response.json();
+                displayMeals([meal]);
+            } else {
+                return;
+            }
+        }
+    </script>
+</body>
+</html>
